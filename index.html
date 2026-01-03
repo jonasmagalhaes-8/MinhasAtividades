@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Tracker v13 - Real Impact</title>
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --card: #161b2b;
+            --primary: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #e2e8f0;
+            --postit: #fef08a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background: var(--card);
+            padding: 5px 15px;
+            border-bottom: 1px solid #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: 100px;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-right: 15px;
+            border-right: 2px solid #2d3748;
+            height: 80%;
+        }
+
+        select,
+        .btn-tool {
+            background: #0b0f1a;
+            color: white;
+            border: 1px solid #4a5568;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-plus-act {
+            background: var(--postit);
+            color: black;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .postit-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            flex-grow: 1;
+            align-items: center;
+            padding: 0 5px;
+        }
+
+        .postit {
+            background: var(--postit);
+            color: #1a202c;
+            min-width: 175px;
+            height: 60px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px 0;
+            border: none;
+        }
+
+        /* TITULO CLEAN */
+        .postit-title-area {
+            padding: 0 12px;
+            background: transparent;
+        }
+
+        .postit-title-area input {
+            background: transparent;
+            border: none;
+            font-weight: bold;
+            width: 100%;
+            outline: none;
+            color: var(--primary);
+            font-size: 0.95rem;
+            border-bottom: 1px dotted var(--primary);
+        }
+
+        .postit-controls {
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 6px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .postit-trash {
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--danger);
+        }
+
+        .prog-bg {
+            height: 5px;
+            background: rgba(0, 0, 0, 0.1);
+            margin: 0 12px 2px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .prog-fill {
+            height: 100%;
+            background: var(--success);
+            transition: 0.3s;
+        }
+
+        .prog-text {
+            font-size: 0.7rem;
+            padding: 0 12px;
+            font-weight: bold;
+            text-align: right;
+            color: #333;
+        }
+
+        .main-container {
+            display: block;
+            grid-template-columns: 1fr 350px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .day-list {
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .day-card {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .day-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .block {
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 6px;
+            width: 185px;
+            border-top: 4px solid var(--danger);
+            position: relative;
+        }
+
+        .block.status-yellow {
+            border-top-color: var(--warning);
+        }
+
+        .block.status-green {
+            border-top-color: var(--success);
+        }
+
+        .right-panel {
+            background: #161b2b;
+            padding: 15px;
+            border-left: 1px solid #2d3748;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-section {
+            flex: 1;
+            background: #0b0f1a;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            border: 1px solid #2d3748;
+            margin-top: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            z-index: 101;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+        }
+
+        .impact-badge {
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            line-height: 1.4;
+        }
+
+        .exec-row {
+            display: grid;
+            grid-template-columns: 11.5vw 1fr 85px;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+            background: #0b0f1a;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .exec-row label {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+        }
+
+        input {
+            background: #0b0f1a;
+            border: 1px solid #4a5568;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="toolbar">
+            <select id="sel-month" onchange="renderAll()"></select>
+            <select id="sel-year" onchange="renderAll()"></select>
+            <button class="btn-tool" onclick="addYear()">+</button>
+            <button class="btn-tool" onclick="delYear()">-</button>
+        </div>
+        <button class="btn-plus-act" onclick="createActivity()">+</button>
+        <div class="postit-scroll" id="postit-container"></div>
+    </header>
+
+    <div class="main-container">
+        <div class="day-list" id="day-list"></div>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeModal()"></div>
+
+    <div class="modal" id="modal-alloc">
+        <h3>Alocar Atividade</h3>
+        <div class="impact-badge" id="alloc-impact-label">Com a conclusão, as atividades diminuirão 0% do faltante.
+            Restará 100%.</div>
+        <label style="font-size:0.7rem">Horário:</label><br><input type="time" id="in-time"
+            style="width:100%; margin-bottom:10px;">
+        <label style="font-size:0.7rem">Peso (Horas):</label><br><input type="number" id="in-weight" step="0.5"
+            value="1.0" style="width:100%; margin-bottom:15px;">
+
+        <h4>Metas do dia pra Atividade e impacto esperado no projeto</h4>
+        <div id="alloc-checklist"></div>
+        <button onclick="addAllocItem()"
+            style="background:#4a5568; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; margin-top:10px;">+
+            Item</button>
+        <button
+            style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:20px"
+            onclick="confirmAlloc()">Confirmar Alocação</button>
+    </div>
+
+    <div class="modal" id="modal-exec">
+        <h3>Atualizar/Finalizar</h3>
+        <div class="impact-badge" id="exec-impact-label">Com a conclusão...</div>
+
+        <label style="font-size:0.7rem">Nome da Atividade:</label>
+        <input type="text" id="exec-act-name" style="width:100%; margin: 5px 0 15px;" onchange="syncNameWithModal()">
+
+        <h4>Checklist de Execução</h4>
+        <p style="font-size:0.65rem; color:#94a3b8; margin-bottom:10px;">Ajuste o impacto, o nome ou o % concluído
+            (0-100):</p>
+        <div id="exec-checklist"></div>
+
+        <button
+            style="width:100%; padding:15px; background:var(--success); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer"
+            onclick="confirmExec()">Atualizar/Finalizar</button>
+    </div>
+
+    <script>
+        let activities = JSON.parse(localStorage.getItem('v13_acts')) || [{ id: 1, name: 'TCC', initial: 0, filtered: false }];
+        let history = JSON.parse(localStorage.getItem('v13_hist')) || {};
+        let years = JSON.parse(localStorage.getItem('v13_years')) || [2026];
+        let logs = JSON.parse(localStorage.getItem('v13_logs')) || [];
+
+        let dragAct = null, activeKey = null, activeIdx = null;
+
+        function init() {
+            const ms = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            document.getElementById('sel-month').innerHTML = `<option value="all">Ver: Todos</option>` + ms.map((m, i) => `<option value="${i}" ${i == new Date().getMonth() ? 'selected' : ''}>${m}</option>`).join('');
+            document.getElementById('sel-year').innerHTML = years.sort((a, b) => a - b).map(y => `<option value="${y}">${y}</option>`).join('');
+            renderAll();
+        }
+
+        function renderAll() { renderPostits(); renderDays(); updateTracker(); renderHistory(); }
+
+        function renderPostits() {
+            const cont = document.getElementById('postit-container');
+            cont.innerHTML = '';
+            activities.forEach(a => {
+                const prog = calculateProg(a);
+                const div = document.createElement('div');
+                div.className = 'postit';
+                div.draggable = true;
+                div.ondragstart = () => dragAct = a;
+                div.innerHTML = `
+                <div class="postit-title-area"><input type="text" value="${a.name}" onchange="updateActName(${a.id}, this.value)"></div>
+                <div class="postit-controls"> <span class="postit-trash" onclick="deleteAct(${a.id})">🗑️</span></div>
+                <div><div class="prog-text">${prog} / 100</div><div class="prog-bg"><div class="prog-fill" style="width:${prog}%"></div></div></div>`;
+                cont.appendChild(div);
+            });
+        }
+
+        function renderDays() {
+            const list = document.getElementById('day-list'), mF = document.getElementById('sel-month').value, yF = document.getElementById('sel-year').value;
+            list.innerHTML = '';
+            const startM = mF === 'all' ? 0 : parseInt(mF), endM = mF === 'all' ? 11 : parseInt(mF);
+            for (let m = startM; m <= endM; m++) {
+                const dCount = new Date(yF, m + 1, 0).getDate();
+                for (let d = 1; d <= dCount; d++) {
+                    const key = `${yF}-${m}-${d}`, blocks = history[key] || [];
+                    if (mF === 'all' && blocks.length === 0) continue;
+                    const div = document.createElement('div');
+                    div.className = 'day-card'; div.ondragover = e => e.preventDefault(); div.ondrop = () => { activeKey = key; openAlloc(); };
+                    div.innerHTML = `<div class="day-title">${d.toString().padStart(2, '0')}/${(m + 1).toString().padStart(2, '0')}</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap">
+                        ${blocks.map((b, i) => {
+                        const p = getBlockPerc(b), status = p >= 100 ? 'status-green' : (p > 0 ? 'status-yellow' : '');
+                        const actName = activities.find(x => x.id === b.actId)?.name || b.name;
+                        return `<div class="block ${status}"><div style="display:flex; justify-content:space-between; font-size:0.6rem"><span>${b.time}</span><span>${b.weight}h</span></div>
+                                <div style="font-weight:bold; margin:4px 0; font-size:0.8rem">${actName}</div>
+                                <button onclick="openExec('${key}', ${i})" style="font-size:0.55rem; cursor:pointer">Atualizar/Finalizar</button>
+                                <button onclick="removeBlock('${key}', ${i})" style="background:none; border:none; color:var(--danger); cursor:pointer; position:absolute; top:4px; right:4px">✕</button></div>`;
+                    }).join('')}</div>`;
+                    list.appendChild(div);
+                }
+            }
+        }
+
+        function updateImpactInfo(type, act) {
+            const prefix = type === 'alloc' ? 'alloc' : 'exec', currentProg = parseFloat(calculateProg(act)), faltante = 100 - currentProg;
+            let impactReal = 0;
+            if (type === 'alloc') {
+                impactReal = Array.from(document.querySelectorAll('#alloc-checklist input[type="number"]')).reduce((acc, i) => acc + parseFloat(i.value || 0), 0);
+            } else {
+                impactReal = Array.from(document.querySelectorAll('.exec-row')).reduce((acc, row) => {
+                    const impact = parseFloat(row.querySelector('.impact-in').value || 0);
+                    const done = parseFloat(row.querySelector('.done-in').value || 0);
+                    return acc + (impact * (done / 100));
+                }, 0);
+            }
+            document.getElementById(`${prefix}-impact-label`).innerText = `Com a conclusão, as atividades diminuirão ${impactReal.toFixed(1)}% do faltante. Restará ${(faltante - impactReal).toFixed(1)}%`;
+        }
+
+        function openAlloc() { if (!dragAct) return; document.getElementById('overlay').style.display = 'block'; document.getElementById('modal-alloc').style.display = 'block'; document.getElementById('alloc-checklist').innerHTML = ''; addAllocItem(); updateImpactInfo('alloc', dragAct); }
+        function addAllocItem() { const div = document.createElement('div'); div.style = "display:grid; grid-template-columns: 1fr 70px 30px; gap:8px; margin-bottom:10px;"; div.innerHTML = `<input type="text" placeholder="Item"> <input type="number" value="0" oninput="updateImpactInfo('alloc', dragAct)"> <button onclick="this.parentElement.remove(); updateImpactInfo('alloc', dragAct)" style="border:none; background:none; color:var(--danger)">✕</button>`; document.getElementById('alloc-checklist').appendChild(div); }
+        function confirmAlloc() {
+            const items = Array.from(document.querySelectorAll('#alloc-checklist div')).map(row => ({ desc: row.children[0].value, impact: parseFloat(row.children[1].value || 0), donePerc: 0 }));
+            if (items.some(it => !it.desc)) return alert("Descreva os itens.");
+            if (!history[activeKey]) history[activeKey] = [];
+            history[activeKey].push({ actId: dragAct.id, name: dragAct.name, time: document.getElementById('in-time').value || '09:00', weight: parseFloat(document.getElementById('in-weight').value), checklist: items });
+            save(); closeModal(); renderAll();
+        }
+
+        function openExec(key, idx) {
+            activeKey = key; activeIdx = idx; const b = history[key][idx], act = activities.find(x => x.id === b.actId);
+            document.getElementById('overlay').style.display = 'block'; document.getElementById('modal-exec').style.display = 'block'; document.getElementById('exec-act-name').value = act.name;
+            document.getElementById('exec-checklist').innerHTML = b.checklist.map((it, i) => `
+            <div class="exec-row">
+                <div><label>Impacto</label><input type="number" class="impact-in" value="${it.impact}" oninput="updateImpactInfo('exec', activities.find(x=>x.id==${b.actId}))" onchange="updateImpact(${i}, this.value)"></div>
+                <div><label>Item</label><input type="text" value="${it.desc}" onchange="updateItemName(${i}, this.value)" style="width:100%; font-size:0.75rem;"></div>
+                <div><label>% Concluído</label><input type="number" class="done-in" value="${it.donePerc}" oninput="updateImpactInfo('exec', activities.find(x=>x.id==${b.actId}))" onchange="updateDone(${i}, this.value)" style="width:100%"></div>
+            </div>`).join('');
+            updateImpactInfo('exec', act);
+        }
+
+        function updateItemName(i, v) { history[activeKey][activeIdx].checklist[i].desc = v; }
+        function updateImpact(i, v) { history[activeKey][activeIdx].checklist[i].impact = parseFloat(v || 0); }
+        function updateDone(i, v) { history[activeKey][activeIdx].checklist[i].donePerc = parseFloat(v || 0); }
+        function confirmExec() { save(); closeModal(); renderAll(); }
+        function syncNameWithModal() { updateActName(history[activeKey][activeIdx].actId, document.getElementById('exec-act-name').value); }
+
+        function calculateProg(act) {
+            let total = act.initial || 0;
+            Object.values(history).flat().forEach(b => { if (b.actId === act.id) b.checklist.forEach(it => total += (it.impact * (it.donePerc / 100))); });
+            return Math.min(total, 100).toFixed(1);
+        }
+        function getBlockPerc(b) { return b.checklist.length ? b.checklist.reduce((acc, i) => acc + i.donePerc, 0) / b.checklist.length : 0; }
+        function updateTracker() { const filtered = activities.filter(a => a.filtered), cont = document.getElementById('tracker-summary'); cont.innerHTML = filtered.length ? filtered.map(a => `<div style="padding:8px; background:#0f172a; border-radius:6px; margin-bottom:8px; border-left:3px solid var(--primary)"><b>${a.name}</b>: ${calculateProg(a)}% concluído.</div>`).join('') : "Filtre para detalhes."; }
+        function updateActName(id, v) { const act = activities.find(x => x.id === id); if (act) act.name = v; save(); renderAll(); }
+        function deleteAct(id) { if (confirm("Excluir definitivamente?")) { activities = activities.filter(x => x.id !== id); save(); renderAll(); } }
+        function toggleFilter(id) { const a = activities.find(x => x.id === id); a.filtered = !a.filtered; renderAll(); }
+        function createActivity() { const p = prompt("Percentual Inicial da Atividade?", "0"); activities.push({ id: Date.now(), name: 'Nova', initial: parseFloat(p || 0), filtered: false }); save(); renderPostits(); }
+        function addYear() { years.push(Math.max(...years) + 1); save(); init(); }
+        function delYear() { if (confirm("Excluir ano?")) { const y = document.getElementById('sel-year').value; years = years.filter(v => v != y); save(); init(); } }
+        function removeBlock(k, i) { if (confirm("Remover?")) { history[k].splice(i, 1); save(); renderAll(); } }
+        function closeModal() { document.querySelectorAll('.modal, .overlay').forEach(el => el.style.display = 'none'); }
+        function save() { localStorage.setItem('v13_acts', JSON.stringify(activities)); localStorage.setItem('v13_hist', JSON.stringify(history)); localStorage.setItem('v13_years', JSON.stringify(years)); }
+        function renderHistory() {
+            const mF = document.getElementById('sel-month').value, yF = document.getElementById('sel-year').value, filteredActs = activities.filter(a => a.filtered).map(a => a.id), cont = document.getElementById('history-list');
+            cont.innerHTML = "Histórico baseado nos filtros.";
+        }
+        init();
+    </script>
+</body>
+
+</html>
