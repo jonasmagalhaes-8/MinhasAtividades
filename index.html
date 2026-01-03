@@ -339,9 +339,9 @@
     </div>
 
     <script>
-        let activities = JSON.parse(localStorage.getItem('v13_acts')) || [{ id: 1, name: 'TCC', initial: 0, filtered: false }];
+        let activities = JSON.parse(localStorage.getItem('v13_acts'));
         let history = JSON.parse(localStorage.getItem('v13_hist')) || {};
-        let years = JSON.parse(localStorage.getItem('v13_years')) || [2026];
+        let years = JSON.parse(localStorage.getItem('v13_years')) || [];
         let logs = JSON.parse(localStorage.getItem('v13_logs')) || [];
 
         let dragAct = null, activeKey = null, activeIdx = null;
