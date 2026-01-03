@@ -341,7 +341,7 @@
     <script>
         let activities = JSON.parse(localStorage.getItem('v13_acts')) || [{ id: 1, name: 'Arraste para um dia!', initial: 0, filtered: false }];
         let history = JSON.parse(localStorage.getItem('v13_hist')) || {};
-        let years = JSON.parse(localStorage.getItem('v13_years')) || [];
+        let years = JSON.parse(localStorage.getItem('v14_years')) || [new Date().getFullYear()];
         let logs = JSON.parse(localStorage.getItem('v13_logs')) || [];
 
         let dragAct = null, activeKey = null, activeIdx = null;
